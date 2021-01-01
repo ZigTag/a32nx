@@ -1,3 +1,21 @@
+/*
+ * A32NX
+ * Copyright (C) 2020-2021 FlyByWire Simulations and its contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class SmartIterator {
     constructor() {
         this._minReturned = NaN;
@@ -105,14 +123,6 @@ class MapInstrument extends ISvgMapRootElement {
     }
     get flightPlanManager() {
         return this._flightPlanManager;
-    }
-    getHideReachedWaypoints() {
-        return this.flightPlanElement ? this.flightPlanElement.hideReachedWaypoints : false;
-    }
-    setHideReachedWaypoints(b) {
-        if (this.flightPlanElement) {
-            this.flightPlanElement.hideReachedWaypoints = b;
-        }
     }
     get dummyObstacles() {
         if (!this._dummyObstacles) {
@@ -331,7 +341,7 @@ class MapInstrument extends ISvgMapRootElement {
         if (this._flightPlanManager) {
             this.instrument.addEventListener("FlightStart", this.onFlightStart.bind(this));
         } else {
-            this._flightPlanManager = new FlightPlanManager(this.instrument);
+            this._flightPlanManager = new fpm.FlightPlanManager(this.instrument);
         }
         let bingMapId = this.bingId;
         if (this.instrument.urlConfig.index) {
@@ -432,25 +442,8 @@ class MapInstrument extends ISvgMapRootElement {
         this.bIsInit = true;
     }
     onFlightStart() {
-        this.checkBushTripCase();
     }
     onBingMapReady() {
-        this.checkBushTripCase();
-    }
-    checkBushTripCase() {
-        if (this.eBingMode !== EBingMode.HORIZON) {
-            Coherent.call("GET_IS_BUSHTRIP").then(v => {
-                this.isBushTrip = v;
-                if (this.isBushTrip) {
-                    console.log("Bushtrip Detected");
-                }
-                if (this.flightPlanElement) {
-                    this.flightPlanElement.highlightActiveLeg = !this.isBushTrip;
-                    this.flightPlanElement.hideReachedWaypoints = !this.isBushTrip;
-                }
-                this.updateFlightPlanVisibility();
-            });
-        }
     }
     updateFlightPlanVisibility() {
         if (this.showFlightPlan) {

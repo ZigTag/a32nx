@@ -7,6 +7,8 @@
 /A32NX/layout.json
 /A32NX/manifest.json
 /A32NX/build_info.json
+/A32NX/html_ui/JS/fmgc/bundle.js
+/A32NX/html_ui/JS/fmgc/LzUtf8.js
 /A32NX/html_ui/Pages/VCockpit/Instruments/generated
 /A32NX/ModelBehaviorDefs/A32NX/generated
 /A32NX/SimObjects/AirPlanes/Asobo_A320_NEO/panel/*.wasm
