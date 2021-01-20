@@ -598,7 +598,20 @@ export class FlightPlanManager {
     if (currentFlightPlan.hasDestination) {
       currentFlightPlan.removeWaypoint(currentFlightPlan.length - 1);
     }
-    this._flightPlans[this._currentFlightPlanIndex].addWaypoint(waypoint);
+
+    currentFlightPlan.addWaypoint(waypoint);
+
+    // make the waypoint before a discontinuity
+    const waypoints = currentFlightPlan.waypoints;
+    const destinationIndex = currentFlightPlan.destinationAirfieldIndex;
+    if (waypoints.length > 0 && destinationIndex && destinationIndex > 0) {
+      const previous = currentFlightPlan.waypoints[destinationIndex - 1];
+      // ensure we do not overwrite a possible discontinuityCanBeCleared
+      if (!previous.endsInDiscontinuity) {
+        previous.endsInDiscontinuity = true;
+        previous.discontinuityCanBeCleared = true;
+      }
+    }
 
     this._updateFlightPlanVersion();
     callback();
@@ -742,6 +755,21 @@ export class FlightPlanManager {
   }
 
   /**
+   * Truncates a flight plan after a specific waypoint.
+   * @param index The index of the first waypoint to remove.
+   * @param callback A callback to call when the operation finishes.
+   */
+  public truncateWaypoints(index: number, thenSetActive = false, callback = () => { }): void {
+    const fp = this._flightPlans[this._currentFlightPlanIndex];
+    for (let i = fp.length; i >= index; i--) {
+      fp.removeWaypoint(index);
+    }
+
+    this._updateFlightPlanVersion();
+    callback();
+  }
+
+  /**
    * Gets the index of a given waypoint in the current flight plan.
    * @param waypoint The waypoint to get the index of.
    */
@@ -781,7 +809,7 @@ export class FlightPlanManager {
    * @param flightPlanIndex The index of the flight plan to get the waypoint from. If omitted, will get from the current flight plan.
    * @param considerApproachWaypoints Whether or not to consider approach waypoints.
    */
-  public getWaypoint(index: number, flightPlanIndex: number = NaN, considerApproachWaypoints: boolean): WayPoint {
+  public getWaypoint(index: number, flightPlanIndex: number = NaN, considerApproachWaypoints: boolean = false): WayPoint {
     if (isNaN(flightPlanIndex)) {
       flightPlanIndex = this._currentFlightPlanIndex;
     }
@@ -814,35 +842,23 @@ export class FlightPlanManager {
   }
 
   /**
-  * Gets all continuous segments of the flight plan (ie. sections before discontinuities)
+  * Gets all the entire flight plan grouped by discontinuities.
   */
-  public getContinuousSegments(): WayPoint[] {
+  public getContinuousSegments(): WayPoint[][] {
       const waypoints = this.getAllWaypoints();
+      const continuousSegments: WayPoint[][] = [];
 
-      // Find continuous segments in the flight plan
-
-      const continuousSegments = [];
-      const discontinuityIndices = waypoints
-          .map((f, i) => f.endsInDiscontinuity ? i : -1)
-          .filter(i => i >= 0);
-
-      // If the first discontinuity is after the first waypoint, we add all the waypoints before the first discontinuity as a segment
-      if (discontinuityIndices[0] > 0) {
-          continuousSegments.push(waypoints.slice(0, discontinuityIndices[0] + 1));
+      let segment = [];
+      for (let i = 0; i < waypoints.length; i++) {
+        const waypoint = waypoints[i];
+        segment.push(waypoint);
+        if (waypoint.endsInDiscontinuity) {
+          continuousSegments.push(segment);
+          segment = [];
+        }
       }
-
-      for (let i = 0; i < discontinuityIndices.length; i++) {
-          const currentIdx = discontinuityIndices[i];
-          const nextIdx = i === discontinuityIndices.length - 1 ? -1 : discontinuityIndices[i + 1];
-
-          // Do we have at least one waypoint after currentIdx ?
-          if (waypoints.length > currentIdx + 1) {
-              if (nextIdx !== -1) {
-                  continuousSegments.push(waypoints.slice(currentIdx + 1, nextIdx));
-              } else {
-                  continuousSegments.push(waypoints.slice(currentIdx + 1));
-              }
-          }
+      if (segment.length) {
+        continuousSegments.push(segment);
       }
 
       return continuousSegments;
