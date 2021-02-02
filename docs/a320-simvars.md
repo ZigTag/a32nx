@@ -322,7 +322,6 @@
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-
 - A32NX_VSPEEDS_LANDING_CONF3
     - Bool
     - True if FLAPS 3 is selected in perf page
@@ -496,7 +495,15 @@
 - A32NX_TO_CONFIG_THS
     - Degrees
     - The pilot-entered THS value in the PERF TAKE OFF page. 0 is a valid entry.
-  
+
 - A32NX_ENG_OUT_ACC_ALT
     - feet
     - The engine out acceleration altitude, set in the PERF TAKE OFF page.
+
+- A32NX_SIDESTICK_POSITION_X
+    - Number
+    - Provides the direct sidestick position (lateral)
+
+- A32NX_SIDESTICK_POSITION_Y
+    - Number
+    - Provides the direct sidestick position (longitudinal)
