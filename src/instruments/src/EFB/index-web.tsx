@@ -21,5 +21,6 @@ import './Assets/Efb.scss';
 import React from "react";
 import ReactDOM from "react-dom";
 import Efb from "./Efb";
+import { SimVarProvider } from "../Common/simVars";
 
-ReactDOM.render(<Efb currentFlight="UAK049" />, document.getElementById('A32NX_REACT_MOUNT'));
+ReactDOM.render(<SimVarProvider><Efb currentFlight="UAK049" /></SimVarProvider>, document.getElementById('A32NX_REACT_MOUNT'));

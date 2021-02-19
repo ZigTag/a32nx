@@ -16,49 +16,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { IconBatteryCharging } from '@tabler/icons';
 import { IconWifi } from '@tabler/icons';
-
-declare const SimVar;
+import { useSimVar } from "../../common/simVars";
 
 type TimeProps = {
     initTime: Date,
     updateTimeSinceStart: Function,
     updateCurrentTime: Function,
 }
-type TimeState = {
-    currentTime: Date,
-    timeSinceStart: string
-}
 
-export default class StatusBar extends React.Component<TimeProps, any> {
-    state: TimeState = {
-        currentTime: this.props.initTime,
-        timeSinceStart: "",
-    }
+const StatusBar = (props: TimeProps) => {
+    const [currentTime, setCurrentTime] = useState<Date>(props.initTime);
+    const [timeSinceStart, setTimeSinceStart] = useState<string>("");
+    const [_, setEfbTurnedOn] = useSimVar('L:A32NX_EFB_TURNED_ON', 'Number');
 
-    interval: any;
-
-    componentDidMount() {
-        this.interval = setInterval(() => {
+    useEffect(() => {
+        const interval = setInterval(() => {
             const date = new Date();
-            const timeSinceStart = this.timeSinceStart(date);
-            this.props.updateCurrentTime(date);
-            this.props.updateTimeSinceStart(timeSinceStart);
-            this.setState({
-                currentTime: date,
-                timeSinceStart: timeSinceStart,
-            });
+            const timeSinceStart = timeSinceStartFn(date);
+            props.updateCurrentTime(date);
+            props.updateTimeSinceStart(timeSinceStart);
+            setCurrentTime(date);
+            setTimeSinceStart(timeSinceStart);
         }, 1000);
-    }
 
-    componentWillUnmount() {
-        clearInterval(this.interval);
-    }
+        return () => clearInterval(interval);
+    });
 
-    timeSinceStart(currentTime: Date) {
-        const diff = currentTime.getTime() - this.props.initTime.getTime();
+    const timeSinceStartFn = (currentTime: Date) => {
+        const diff = currentTime.getTime() - props.initTime.getTime();
         const minutes = Math.floor(diff / 1000 / 60);
         const diffMinusMinutes = diff - (minutes * 1000 * 60);
         const seconds = Math.floor(diffMinusMinutes / 1000);
@@ -66,20 +54,17 @@ export default class StatusBar extends React.Component<TimeProps, any> {
         return formatTime(([minutes, seconds]));
     }
 
-    render() {
-        return (
-            <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
-                <div>flyPad</div>
-                <div>{formatTime(([this.state.currentTime.getUTCHours(), this.state.currentTime.getUTCMinutes()])) + 'z'}</div>
-                <div className="flex items-center">
-                    <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
-                    100%
-                    {/* TODO find a way to use `setSimVar` here */}
-                    <IconBatteryCharging onClick={() => SimVar.SetSimVarValue('L:A32NX_EFB_TURNED_ON', 'number', 0)} className="ml-2" color="yellow" size={25} stroke={1.5} strokeLinejoin="miter" />
-                </div>
+    return (
+        <div className="flex items-center justify-between px-6 py-1 text-white font-medium leading-none">
+            <div>flyPad</div>
+            <div>{formatTime(([currentTime.getUTCHours(), currentTime.getUTCMinutes()])) + 'z'}</div>
+            <div className="flex items-center">
+                <IconWifi className="mr-2" size={22} stroke={1.5} strokeLinejoin="miter" />
+                100%
+                <IconBatteryCharging onClick={() => setEfbTurnedOn(0)} className="ml-2" color="yellow" size={25} stroke={1.5} strokeLinejoin="miter" />
             </div>
-        );
-    }
+        </div>
+    );
 }
 
 export function formatTime(numbers: number[]) {
@@ -109,3 +94,5 @@ export function dateFormat(date: number): string {
 
     return numberWithSuffix;
 }
+
+export default StatusBar;
