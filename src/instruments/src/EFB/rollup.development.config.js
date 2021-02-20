@@ -18,6 +18,8 @@
 
 'use strict';
 
+require('dotenv').config();
+
 const image = require('@rollup/plugin-image');
 const babel = require('@rollup/plugin-babel').default;
 const commonjs = require('@rollup/plugin-commonjs');
@@ -57,7 +59,10 @@ module.exports = {
             extensions,
         }),
         replace({
-            'process.env.NODE_ENV': JSON.stringify('production'),
+            'process.env.NODE_ENV': JSON.stringify('development'),
+            'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
+            'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
+            'process.env.SIMVAR_DISABLE': 'true',
         }),
         postcss({
             use: {
