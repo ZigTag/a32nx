@@ -19,7 +19,7 @@ type ChartSelectorType = {
     setImageLink: CallableFunction,
 }
 
-const ChartButtons: React.FC<ChartButtonsType> = (props) => (
+const ChartButtons = (props: ChartButtonsType) => (
     <>
         {!props.isDisplayingCharts ? (
             <div className="flex text-white font-medium mt-6 ml-6 text-medium">
@@ -48,7 +48,7 @@ const ChartButtons: React.FC<ChartButtonsType> = (props) => (
     </>
 );
 
-const ChartSelector: React.FC<ChartSelectorType> = (props) => (
+const ChartSelector = (props: ChartSelectorType) => (
     <>
         {!props.isDisplayingCharts
             ? (
